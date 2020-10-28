@@ -3,55 +3,125 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <android/log.h>
+#include <stdbool.h>
+#include <fcntl.h>
 
-static const int MAX_PATH = 4;
-static const char* TAG = "DetectMagiskNative";
-static char* blacklistedPaths[MAX_PATH] = {"/sbin/.magisk/", "/sbin/.core/mirror", "/sbin/.core/img", "/sbin/.core/db-0/magisk.db"};
+static inline bool is_mountpaths_detected();
+static inline bool is_supath_detected();
+
+static const char *TAG = "DetectMagiskNative";
+static char *blacklistedMountPaths[] = {
+        "/sbin/.magisk/",
+        "/sbin/.core/mirror",
+        "/sbin/.core/img",
+        "/sbin/.core/db-0/magisk.db"
+};
+
+static const char *suPaths[] = {
+        "/data/local/su",
+        "/data/local/bin/su",
+        "/data/local/xbin/su",
+        "/sbin/su",
+        "/su/bin/su",
+        "/system/bin/su",
+        "/system/bin/.ext/su",
+        "/system/bin/failsafe/su",
+        "/system/sd/xbin/su",
+        "/system/usr/we-need-root/su",
+        "/system/xbin/su",
+        "/cache/su",
+        "/data/su",
+        "/dev/su"
+};
+
 
 JNIEXPORT jboolean
 Java_com_darvin_security_IsolatedService_isMagiskPresentNative(
         JNIEnv *env,
         jobject this) {
-    jboolean bRet = JNI_FALSE;
+    bool bRet = false;
+    do {
+        bRet = is_supath_detected();
+        if (bRet)
+            break;
+        bRet = is_mountpaths_detected();
+        if (bRet)
+            break;
+    } while (false);
+
+    if(bRet)
+        return JNI_TRUE;
+    else
+        return JNI_FALSE;
+}
+
+__attribute__((always_inline))
+static inline bool is_mountpaths_detected() {
+    int len = sizeof(blacklistedMountPaths) / sizeof(blacklistedMountPaths[0]);
+
+    bool bRet = false;
     int pid = getpid();
     char ch[100];
     memset(ch, '\0', 100 * sizeof(char));
 
-    sprintf(ch,"/proc/%d/mounts", pid);
+    sprintf(ch, "/proc/%d/mounts", pid);
 
-    FILE* fp = fopen(ch,"r");
-    if(fp == NULL)
+    FILE *fp = fopen(ch, "r");
+    if (fp == NULL)
         goto exit;
 
-    fseek(fp,0L,SEEK_END);
+    fseek(fp, 0L, SEEK_END);
     long size = ftell(fp);
-    __android_log_print(ANDROID_LOG_INFO, TAG , "Opening Mount file :%s: size: %ld", ch, size);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Opening Mount file :%s: size: %ld", ch, size);
     /* For some reason size comes as zero */
-    if( size == 0)
+    if (size == 0)
         size = 3000;  /*This will differ for different devices */
-    char* buffer = malloc(size * sizeof(char));
-    if(buffer == NULL)
+    char *buffer = malloc(size * sizeof(char));
+    if (buffer == NULL)
         goto exit;
 
-    size_t read = fread(buffer, 1, 3000, fp);
-    //__android_log_print(ANDROID_LOG_INFO, TAG, "Reading Mount file :%d: %s", read, buffer);
+    size_t read = fread(buffer, 1, size, fp);
     int count = 0;
-    for(int i=0; i < MAX_PATH; i++){
-        __android_log_print(ANDROID_LOG_INFO, TAG, "Path  :%s", blacklistedPaths[i]);
-        char* rem = strstr(buffer, blacklistedPaths[i]);
-        if(rem != NULL) {
+    for (int i = 0; i < len; i++) {
+        __android_log_print(ANDROID_LOG_INFO, TAG, "Path  :%s", blacklistedMountPaths[i]);
+        char *rem = strstr(buffer, blacklistedMountPaths[i]);
+        if (rem != NULL) {
             count++;
             __android_log_print(ANDROID_LOG_INFO, TAG, "Found Path");
+            break;
         }
     }
-    if(count > 0)
-        bRet = JNI_TRUE;
+    if (count > 0)
+        bRet = true;
 
     exit:
 
-    if(buffer != NULL)
+    if (buffer != NULL)
         free(buffer);
-    if( fp != NULL)
+    if (fp != NULL)
         fclose(fp);
+
+    return bRet;
+}
+
+
+__attribute__((always_inline))
+static inline bool is_supath_detected() {
+    int len = sizeof(suPaths) / sizeof(suPaths[0]);
+
+    bool bRet = false;
+    for (int i = 0; i < len; i++) {
+        if (open(suPaths[i], O_RDONLY) >= 0) {
+            __android_log_print(ANDROID_LOG_INFO, TAG, "Found Path :%s", suPaths[i]);
+            bRet = true;
+            break;
+        }
+        if (0 == access(suPaths[i], R_OK)) {
+            __android_log_print(ANDROID_LOG_INFO, TAG, "Found Path :%s", suPaths[i]);
+            bRet = true;
+            break;
+        }
+    }
+
     return bRet;
 }

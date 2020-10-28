@@ -13,10 +13,6 @@ import java.io.InputStreamReader;
 
 public class IsolatedService extends Service{
 
-    static{
-        System.loadLibrary("native-lib");
-    }
-    public native boolean isMagiskPresentNative();
     private String[] blackListedMountPaths = { "/sbin/.magisk/", "/sbin/.core/mirror", "/sbin/.core/img", "/sbin/.core/db-0/magisk.db"};
     private static final String TAG = "DetectMagisk";
     @Override
@@ -47,18 +43,17 @@ public class IsolatedService extends Service{
                 reader.close();
                 fis.close();
                 Log.d(TAG, "Count of paths "+ count);
-                if(count > 1){
-                    Log.d(TAG, "Found atleast more than 1 path ");
+                if(count > 0){
+                    Log.d(TAG, "Found atleast 1 path ");
                     isMagiskPresent = true;
                 }else {
                     /*Incase the java calls are hooked, there is 1 more level
                     of check in the native to detect if the same blacklisted paths are
-                    found in the proc maps when accessed from native.
-                    Native functions can also be hooked.But requires some effort
-                    if it is properly obfuscated and syscalls are used in place
-                    of libc calls
+                    found in the proc maps along with checks for su files when accessed
+                    from native.Native functions can also be hooked.But requires some effort
+                    if it is properly obfuscated and syscalls are used in place of libc calls
                      */
-                    isMagiskPresent = isMagiskPresentNative();
+                    isMagiskPresent = Native.isMagiskPresentNative();
                 }
 
                 Log.d(TAG, "Found Magisk in Mount " + isMagiskPresent);
