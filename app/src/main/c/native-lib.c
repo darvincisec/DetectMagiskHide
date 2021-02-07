@@ -10,6 +10,7 @@ static inline bool is_mountpaths_detected();
 static inline bool is_supath_detected();
 
 static const char *TAG = "DetectMagiskNative";
+
 static char *blacklistedMountPaths[] = {
         "/sbin/.magisk/",
         "/sbin/.core/mirror",
@@ -36,7 +37,7 @@ static const char *suPaths[] = {
 
 
 JNIEXPORT jboolean
-Java_com_darvin_security_IsolatedService_isMagiskPresentNative(
+Java_com_darvin_security_Native_isMagiskPresentNative(
         JNIEnv *env,
         jobject this) {
     bool bRet = false;
