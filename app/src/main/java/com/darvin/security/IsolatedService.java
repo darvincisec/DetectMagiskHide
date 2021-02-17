@@ -2,7 +2,9 @@ package com.darvin.security;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.IBinder;
+import android.system.Os;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -14,7 +16,7 @@ import java.io.InputStreamReader;
 public class IsolatedService extends Service{
 
     private String[] blackListedMountPaths = { "/sbin/.magisk/", "/sbin/.core/mirror", "/sbin/.core/img", "/sbin/.core/db-0/magisk.db"};
-    private static final String TAG = "DetectMagisk";
+    private static final String TAG = "DetectMagisk-Isolated";
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
@@ -22,6 +24,9 @@ public class IsolatedService extends Service{
 
     private final IIsolatedService.Stub mBinder = new IIsolatedService.Stub(){
         public boolean isMagiskPresent(){
+            Binder.clearCallingIdentity();
+            Log.d(TAG, "Isolated UID:"+ Os.getuid());
+
             boolean isMagiskPresent = false;
             int pid = android.os.Process.myPid();
             String cwd = String.format("/proc/%d/mounts", pid);
@@ -42,7 +47,7 @@ public class IsolatedService extends Service{
                 }
                 reader.close();
                 fis.close();
-                Log.d(TAG, "Count of paths "+ count);
+                Log.d(TAG, "Count of detected paths "+ count);
                 if(count > 0){
                     Log.d(TAG, "Found atleast 1 path ");
                     isMagiskPresent = true;

@@ -5,8 +5,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.system.Os;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +33,7 @@ public class DetectMagisk extends AppCompatActivity {
                         if(bServiceBound){
                             boolean bIsMagisk = false;
                             try {
+                                Log.d(TAG, "UID:"+ Os.getuid());
                                 bIsMagisk = serviceBinder.isMagiskPresent();
                                 if(bIsMagisk)
                                     Toast.makeText(getApplicationContext(),"Magisk Found", Toast.LENGTH_LONG).show();

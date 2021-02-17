@@ -84,11 +84,11 @@ static inline bool is_mountpaths_detected() {
     size_t read = fread(buffer, 1, size, fp);
     int count = 0;
     for (int i = 0; i < len; i++) {
-        __android_log_print(ANDROID_LOG_INFO, TAG, "Path  :%s", blacklistedMountPaths[i]);
+        __android_log_print(ANDROID_LOG_INFO, TAG, "Checking Mount Path  :%s", blacklistedMountPaths[i]);
         char *rem = strstr(buffer, blacklistedMountPaths[i]);
         if (rem != NULL) {
             count++;
-            __android_log_print(ANDROID_LOG_INFO, TAG, "Found Path");
+            __android_log_print(ANDROID_LOG_INFO, TAG, "Found Mount Path :%s", blacklistedMountPaths[i]);
             break;
         }
     }
@@ -112,13 +112,14 @@ static inline bool is_supath_detected() {
 
     bool bRet = false;
     for (int i = 0; i < len; i++) {
+        __android_log_print(ANDROID_LOG_INFO, TAG, "Checking SU Path  :%s", suPaths[i]);
         if (open(suPaths[i], O_RDONLY) >= 0) {
-            __android_log_print(ANDROID_LOG_INFO, TAG, "Found Path :%s", suPaths[i]);
+            __android_log_print(ANDROID_LOG_INFO, TAG, "Found SU Path :%s", suPaths[i]);
             bRet = true;
             break;
         }
         if (0 == access(suPaths[i], R_OK)) {
-            __android_log_print(ANDROID_LOG_INFO, TAG, "Found Path :%s", suPaths[i]);
+            __android_log_print(ANDROID_LOG_INFO, TAG, "Found SU Path :%s", suPaths[i]);
             bRet = true;
             break;
         }
