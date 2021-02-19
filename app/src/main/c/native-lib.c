@@ -61,22 +61,17 @@ static inline bool is_mountpaths_detected() {
     int len = sizeof(blacklistedMountPaths) / sizeof(blacklistedMountPaths[0]);
 
     bool bRet = false;
-    int pid = getpid();
-    char ch[100];
-    memset(ch, '\0', 100 * sizeof(char));
 
-    sprintf(ch, "/proc/%d/mounts", pid);
-
-    FILE *fp = fopen(ch, "r");
+    FILE *fp = fopen("/proc/self/mounts", "r");
     if (fp == NULL)
         goto exit;
 
     fseek(fp, 0L, SEEK_END);
     long size = ftell(fp);
-    __android_log_print(ANDROID_LOG_INFO, TAG, "Opening Mount file :%s: size: %ld", ch, size);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Opening Mount file size: %ld", size);
     /* For some reason size comes as zero */
     if (size == 0)
-        size = 3000;  /*This will differ for different devices */
+        size = 20000;  /*This will differ for different devices */
     char *buffer = malloc(size * sizeof(char));
     if (buffer == NULL)
         goto exit;
