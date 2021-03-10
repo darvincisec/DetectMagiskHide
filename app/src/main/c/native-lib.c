@@ -11,6 +11,8 @@ static inline bool is_supath_detected();
 
 static const char *TAG = "DetectMagiskNative";
 
+static int hookDetect = 1;
+
 static char *blacklistedMountPaths[] = {
         "/sbin/.magisk/",
         "/sbin/.core/mirror",
@@ -34,6 +36,16 @@ static const char *suPaths[] = {
         "/data/su",
         "/dev/su"
 };
+
+JNIEXPORT jboolean
+Java_com_darvin_security_Native_isNativeLibLoaded(JNIEnv
+* env, jclass clazz, jboolean debug) {
+    if(debug){
+        hookDetect = 1;
+    }else{
+        hookDetect = 0;
+    }
+}
 
 
 JNIEXPORT jboolean

@@ -23,6 +23,12 @@ public class IsolatedService extends Service{
 
     private final IIsolatedService.Stub mBinder = new IIsolatedService.Stub(){
         public boolean isMagiskPresent(){
+            try{
+                Native.isNativeLibLoaded(true);
+            }catch (UnsatisfiedLinkError e){
+                Log.i(TAG, "Native lib fails to load.");
+                return true;
+            }
 
             Log.d(TAG, "Isolated UID:"+ Os.getuid());
 
@@ -61,8 +67,6 @@ public class IsolatedService extends Service{
                     isMagiskPresent = Native.isMagiskPresentNative();
                     Log.d(TAG, "Found Magisk in Native " + isMagiskPresent);
                 }
-
-
 
             } catch (IOException e) {
                 e.printStackTrace();
