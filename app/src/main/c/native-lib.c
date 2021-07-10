@@ -5,6 +5,7 @@
 #include <android/log.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <string.h>
 
 static inline bool is_mountpaths_detected();
 static inline bool is_supath_detected();
@@ -12,10 +13,9 @@ static inline bool is_supath_detected();
 static const char *TAG = "DetectMagiskNative";
 
 static char *blacklistedMountPaths[] = {
-        "/sbin/.magisk/",
-        "/sbin/.core/mirror",
-        "/sbin/.core/img",
-        "/sbin/.core/db-0/magisk.db"
+        "magisk",
+        "core/mirror",
+        "core/img"
 };
 
 static const char *suPaths[] = {
@@ -72,7 +72,7 @@ static inline bool is_mountpaths_detected() {
     /* For some reason size comes as zero */
     if (size == 0)
         size = 20000;  /*This will differ for different devices */
-    char *buffer = malloc(size * sizeof(char));
+    char *buffer = calloc(size, sizeof(char));
     if (buffer == NULL)
         goto exit;
 
