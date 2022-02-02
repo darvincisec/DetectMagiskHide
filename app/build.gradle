@@ -1,11 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
+    buildToolsVersion '30.0.3'
     defaultConfig {
         applicationId "com.darvin.security"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -14,6 +15,7 @@ android {
                 cppFlags ""
             }
         }
+        //ndkVersion "20.1.5948944"
     }
     buildTypes {
         release {
@@ -26,6 +28,8 @@ android {
             path "CMakeLists.txt"
         }
     }
+
+    dependenciesInfo.includeInApk false
 }
 
 dependencies {

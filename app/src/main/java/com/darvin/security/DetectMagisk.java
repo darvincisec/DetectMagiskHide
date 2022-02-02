@@ -56,7 +56,7 @@ public class DetectMagisk extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Intent intent = new Intent(this,IsolatedService.class);
+        Intent intent = new Intent(getApplicationContext(),IsolatedService.class);
         /*Binding to an isolated service */
         getApplicationContext().bindService(intent, mIsolatedServiceConnection, BIND_AUTO_CREATE);
     }
