@@ -14,7 +14,7 @@ import java.io.InputStreamReader;
 
 public class IsolatedService extends Service{
 
-    private String[] blackListedMountPaths = { "/sbin/.magisk/", "/sbin/.core/mirror", "/sbin/.core/img", "/sbin/.core/db-0/magisk.db"};
+    private static final String[] blackListedMountPaths = { "magisk", "core/mirror", "core/img"};
     private static final String TAG = "DetectMagisk-Isolated";
     @Override
     public IBinder onBind(Intent intent) {
